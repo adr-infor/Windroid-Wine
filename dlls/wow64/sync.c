@@ -405,33 +405,6 @@ NTSTATUS WINAPI wow64_NtCreateSection( UINT *args )
 
 
 /**********************************************************************
- *           wow64_NtCreateSectionEx
- */
-NTSTATUS WINAPI wow64_NtCreateSectionEx( UINT *args )
-{
-    ULONG *handle_ptr = get_ptr( &args );
-    ACCESS_MASK access = get_ulong( &args );
-    OBJECT_ATTRIBUTES32 *attr32 = get_ptr( &args );
-    const LARGE_INTEGER *size = get_ptr( &args );
-    ULONG protect = get_ulong( &args );
-    ULONG flags = get_ulong( &args );
-    HANDLE file = get_handle( &args );
-    void *params = get_ptr( &args );
-    ULONG params_count = get_ulong( &args );
-
-    struct object_attr64 attr;
-    HANDLE handle = 0;
-    NTSTATUS status;
-
-    *handle_ptr = 0;
-    status = NtCreateSectionEx( &handle, access, objattr_32to64( &attr, attr32 ), size,
-                                protect, flags, file, params, params_count );
-    put_handle( handle_ptr, handle );
-    return status;
-}
-
-
-/**********************************************************************
  *           wow64_NtCreateSemaphore
  */
 NTSTATUS WINAPI wow64_NtCreateSemaphore( UINT *args )
