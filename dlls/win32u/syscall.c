@@ -39,7 +39,7 @@ ULONG_PTR zero_bits = 0;
 static ULONG_PTR syscalls[] =
 {
 #define SYSCALL_ENTRY(id,name,args) (ULONG_PTR)name,
-#ifdef _WIN64
+#if defined(__x86_64__) || defined(__aarch64__)
     ALL_SYSCALLS64
 #else
     ALL_SYSCALLS32
@@ -47,10 +47,10 @@ static ULONG_PTR syscalls[] =
 #undef SYSCALL_ENTRY
 };
 
-static BYTE arguments[ARRAY_SIZE(syscalls)] =
+static BYTE arguments[] =
 {
 #define SYSCALL_ENTRY(id,name,args) args,
-#ifdef _WIN64
+#if defined(__x86_64__) || defined(__aarch64__)
     ALL_SYSCALLS64
 #else
     ALL_SYSCALLS32

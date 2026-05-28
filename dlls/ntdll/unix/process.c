@@ -1110,6 +1110,16 @@ void fill_vm_counters( VM_COUNTERS_EX *pvmi, int unix_pid )
         break
 
 /**********************************************************************
+ *           NtGetNextProcess  (NTDLL.@)
+ */
+NTSTATUS WINAPI NtGetNextProcess( HANDLE process, ACCESS_MASK access, ULONG attributes,
+                                  ULONG flags, HANDLE *handle )
+{
+    FIXME( "stub: %p %x %x %x %p\n", process, (int)access, (int)attributes, (int)flags, handle );
+    return STATUS_NOT_IMPLEMENTED;
+}
+
+/**********************************************************************
  *           NtQueryInformationProcess  (NTDLL.@)
  */
 NTSTATUS WINAPI NtQueryInformationProcess( HANDLE handle, PROCESSINFOCLASS class, void *info,

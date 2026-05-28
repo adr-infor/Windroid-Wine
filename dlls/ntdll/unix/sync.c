@@ -334,6 +334,17 @@ NTSTATUS WINAPI NtCreateSemaphore( HANDLE *handle, ACCESS_MASK access, const OBJ
     return ret;
 }
 
+/***********************************************************************
+ *             NtCreateSectionEx (NTDLL.@)
+ */
+NTSTATUS WINAPI NtCreateSectionEx( HANDLE *handle, ACCESS_MASK access, const OBJECT_ATTRIBUTES *attr,
+                                   const LARGE_INTEGER *size, ULONG protect, ULONG sec_flags,
+                                   HANDLE file, MEM_EXTENDED_PARAMETER *params, ULONG params_count )
+{
+    if (params_count) FIXME( "extended parameters not supported\n" );
+    return NtCreateSection( handle, access, attr, size, protect, sec_flags, file );
+}
+
 
 /******************************************************************************
  *              NtOpenSemaphore (NTDLL.@)
