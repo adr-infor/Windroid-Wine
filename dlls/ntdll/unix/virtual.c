@@ -3378,6 +3378,12 @@ void virtual_init(void) {
 
 #ifdef _WIN64
   host_addr_space_limit = get_host_addr_space_limit();
+  if (address_space_limit > host_addr_space_limit)
+      address_space_limit = host_addr_space_limit;
+  if (user_space_limit > host_addr_space_limit)
+      user_space_limit = host_addr_space_limit;
+  if (working_set_limit > host_addr_space_limit)
+      working_set_limit = host_addr_space_limit;
   TRACE("host addr space limit: %p\n", host_addr_space_limit);
 #else
   host_addr_space_limit = address_space_limit;
