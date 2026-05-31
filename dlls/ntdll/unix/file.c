@@ -6502,18 +6502,21 @@ NTSTATUS WINAPI NtReadFile( HANDLE handle, HANDLE event, PIO_APC_ROUTINE apc, vo
         if (offset && offset->QuadPart != FILE_USE_FILE_POINTER_POSITION)
         {
             /* async I/O doesn't make sense on regular files */
-            while ((result = virtual_locked_pread( unix_handle, buffer, length, offset->QuadPart )) == -1)
+            while (total < length)
             {
-                if (errno != EINTR)
+                if ((result = virtual_locked_pread( unix_handle, (char *)buffer + total, length - total, offset->QuadPart + total )) == -1)
                 {
+                    if (errno == EINTR) continue;
                     status = errno_to_status( errno );
                     goto done;
                 }
+                if (!result) break;
+                total += result;
             }
-            if (!async_read) /* update file pointer position */
-                lseek( unix_handle, offset->QuadPart + result, SEEK_SET );
 
-            total = result;
+            if (!async_read) /* update file pointer position */
+                lseek( unix_handle, offset->QuadPart + total, SEEK_SET );
+
             status = (total || !length) ? STATUS_SUCCESS : STATUS_END_OF_FILE;
             goto done;
         }
