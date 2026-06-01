@@ -1696,7 +1696,13 @@ static inline int mprotect_exec(void *base, size_t size, int unix_prot) {
       return -1;
   }
 
-  return mprotect(base, size, unix_prot);
+  if (mprotect(base, size, unix_prot)) {
+    if (errno == EPERM && (unix_prot & PROT_EXEC)) {
+      return mprotect(base, size, unix_prot & ~PROT_EXEC);
+    }
+    return -1;
+  }
+  return 0;
 }
 
 /***********************************************************************
@@ -2163,7 +2169,7 @@ static NTSTATUS map_file_into_view(struct file_view *view, int fd, size_t start,
   /* Now read in the file */
   pread(fd, ptr, size, offset);
   if (prot != (PROT_READ | PROT_WRITE))
-    mprotect(ptr, size, prot); /* Set the right protection */
+    mprotect_exec(ptr, size, prot); /* Set the right protection */
 done:
   set_page_vprot((char *)view->base + start, size, vprot);
   return STATUS_SUCCESS;

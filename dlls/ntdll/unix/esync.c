@@ -1088,6 +1088,13 @@ static NTSTATUS __esync_wait_objects( unsigned int count, const HANDLE *handles,
 
                     if (fds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
                     {
+#ifdef __ANDROID__
+                        if (fds[i].revents & POLLHUP)
+                        {
+                            WARN("Polling on fd %d returned POLLHUP, returning STATUS_ABANDONED_WAIT_0.\n", fds[i].fd);
+                            return STATUS_ABANDONED_WAIT_0 + i;
+                        }
+#endif
                         ERR("Polling on fd %d returned %#x.\n", fds[i].fd, fds[i].revents);
                         return STATUS_INVALID_HANDLE;
                     }
@@ -1186,6 +1193,13 @@ tryagain:
 
                 if (fds[0].revents & (POLLHUP | POLLERR | POLLNVAL))
                 {
+#ifdef __ANDROID__
+                    if (fds[0].revents & POLLHUP)
+                    {
+                        WARN("Polling on fd %d returned POLLHUP, returning STATUS_ABANDONED_WAIT_0.\n", fds[0].fd);
+                        return STATUS_ABANDONED_WAIT_0;
+                    }
+#endif
                     ERR("Polling on fd %d returned %#x.\n", fds[0].fd, fds[0].revents);
                     return STATUS_INVALID_HANDLE;
                 }
