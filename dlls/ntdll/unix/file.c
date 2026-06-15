@@ -934,6 +934,30 @@ static char *parse_vfstab_entries( FILE *f, dev_t dev, ino_t ino)
 #endif
 
 #ifdef linux
+
+#ifdef __ANDROID__
+/* Skip Android system mount points that Wine never uses as drives and
+ * that trigger unnecessary SELinux AVC denials (mnt_product_file, etc.) */
+static int is_android_system_mount( const char *dir )
+{
+    static const char * const android_sys_prefixes[] = {
+        "/apex", "/system", "/vendor", "/product", "/mnt/product",
+        "/mnt/vendor", "/mnt/apex", "/mnt/expand", "/odm", "/oem",
+        "/proc", "/sys", "/dev", "/acct", "/cache", "/config",
+        "/data/tombstones", NULL
+    };
+    int i;
+    for (i = 0; android_sys_prefixes[i]; i++)
+    {
+        const char *prefix = android_sys_prefixes[i];
+        size_t len = strlen( prefix );
+        if (!strncmp( dir, prefix, len ) && (dir[len] == '\0' || dir[len] == '/'))
+            return 1;
+    }
+    return 0;
+}
+#endif /* __ANDROID__ */
+
 static char *parse_mount_entries( FILE *f, dev_t dev, ino_t ino )
 {
     struct mntent *entry;
@@ -947,6 +971,12 @@ static char *parse_mount_entries( FILE *f, dev_t dev, ino_t ino )
             !strcmp( entry->mnt_type, "cifs" ) ||
             !strcmp( entry->mnt_type, "smbfs" ) ||
             !strcmp( entry->mnt_type, "ncpfs" )) continue;
+
+#ifdef __ANDROID__
+        /* Skip Android system paths to avoid SELinux AVC denials on
+         * restricted mount points like mnt_product_file, mnt_vendor_file, etc. */
+        if (is_android_system_mount( entry->mnt_dir )) continue;
+#endif
 
         if (stat( entry->mnt_dir, &st ) == -1) continue;
         if (st.st_dev != dev || st.st_ino != ino) continue;
